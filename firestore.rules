@@ -1,0 +1,80 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.token.email == 'santraswapnadeep20@gmail.com'
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Notices: Public read, Admin write
+    match /notices/{noticeId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidId(noticeId) && isValidNotice(request.resource.data);
+    }
+
+    function isValidNotice(data) {
+      return data.keys().hasAll(['title', 'content', 'date', 'type']) && 
+             data.keys().size() == 4 &&
+             data.title is string && data.title.size() <= 200 &&
+             data.content is string && data.content.size() <= 10000 &&
+             data.date is string &&
+             data.type in ['general', 'admission', 'exam', 'placement'];
+    }
+
+    // Gallery: Public read, Admin write
+    match /gallery/{itemId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidId(itemId) && isValidGalleryItem(request.resource.data);
+    }
+
+    function isValidGalleryItem(data) {
+      return data.keys().hasAll(['url', 'category']) &&
+             (data.keys().size() == 2 || (data.keys().size() == 3 && data.keys().hasAll(['caption']))) &&
+             data.url is string && data.url.size() <= 1000 &&
+             data.category is string && data.category.size() <= 50 &&
+             (!data.keys().hasAny(['caption']) || (data.caption is string && data.caption.size() <= 200));
+    }
+
+    // Contacts: Public create, Admin read/delete
+    match /contacts/{contactId} {
+      allow create: if isValidId(contactId) && isValidContact(request.resource.data);
+      allow read, delete: if isAdmin();
+    }
+
+    function isValidContact(data) {
+      return data.keys().hasAll(['name', 'email', 'message', 'timestamp']) &&
+             (data.keys().size() == 4 || (data.keys().size() == 5 && data.keys().hasAll(['subject']))) &&
+             data.name is string && data.name.size() <= 100 &&
+             data.email is string && data.email.size() <= 100 &&
+             data.message is string && data.message.size() <= 2000 &&
+             data.timestamp is string;
+    }
+
+    // Admins: Admin read, No direct write (should be managed via console or special tool)
+    match /admins/{adminId} {
+      allow read: if isAdmin();
+      allow write: if false; // Security: Admins should be managed via Firebase Console for extra safety
+    }
+  }
+}

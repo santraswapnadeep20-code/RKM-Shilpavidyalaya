@@ -1,0 +1,68 @@
+{
+  "entities": {
+    "Notice": {
+      "title": "Notice",
+      "description": "Educational or administrative notice",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "type": { "type": "string", "enum": ["general", "admission", "exam", "placement"] }
+      },
+      "required": ["title", "content", "date", "type"]
+    },
+    "GalleryItem": {
+      "title": "Gallery Item",
+      "description": "Image in the gallery",
+      "type": "object",
+      "properties": {
+        "url": { "type": "string" },
+        "caption": { "type": "string" },
+        "category": { "type": "string" }
+      },
+      "required": ["url", "category"]
+    },
+    "ContactSubmission": {
+      "title": "Contact Submission",
+      "description": "Message from website visitor",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "message", "timestamp"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Admin user record",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "superadmin"] }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "/notices/{noticeId}": {
+      "schema": "Notice",
+      "description": "Administrative notices"
+    },
+    "/gallery/{itemId}": {
+      "schema": "GalleryItem",
+      "description": "Gallery images"
+    },
+    "/contacts/{contactId}": {
+      "schema": "ContactSubmission",
+      "description": "Contact form submissions"
+    },
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "List of authorized administrators"
+    }
+  }
+}

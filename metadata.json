@@ -1,0 +1,6 @@
+{
+  "name": "Ramakrishna Mission Shilpavidyalaya",
+  "description": "Official website for Ramakrishna Mission Shilpavidyalaya, Belur Math. A technical education institution focusing on empowering youth through vocational excellence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
